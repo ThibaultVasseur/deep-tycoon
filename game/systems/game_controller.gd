@@ -16,6 +16,36 @@ var _autosave_accum := 0.0
 var _last_offline := {"elapsed": 0.0, "gain": 0.0}
 var _offline_x2_available := false
 
+var buy_mode := 1  # 1, 10, ou -1 (=Max)
+
+func set_buy_mode(m: int) -> void:
+	buy_mode = m
+	structure_changed.emit()
+
+## Nombre de niveaux + coût pour l'achat courant (selon buy_mode) sur un composant.
+func planned_upgrade(base_cost: float, cost_growth: float, level: int) -> Dictionary:
+	var count := buy_mode
+	if buy_mode < 0:
+		count = Economy.max_levels_affordable(base_cost, cost_growth, level, cash())
+	count = maxi(count, 0)
+	var cost := Economy.bulk_upgrade_cost(base_cost, cost_growth, level, count)
+	return {"count": count, "cost": cost}
+
+func planned_mine(i: int) -> Dictionary:
+	var c := active()
+	if c == null or i < 0 or i >= c.mines.size():
+		return {"count": 0, "cost": INF}
+	var m: Mine = c.mines[i]
+	return planned_upgrade(m.base_cost, m.cost_growth, m.level)
+
+func planned_elevator() -> Dictionary:
+	var c := active()
+	return planned_upgrade(c.elevator.base_cost, c.elevator.cost_growth, c.elevator.level) if c != null else {"count": 0, "cost": INF}
+
+func planned_warehouse() -> Dictionary:
+	var c := active()
+	return planned_upgrade(c.warehouse.base_cost, c.warehouse.cost_growth, c.warehouse.level) if c != null else {"count": 0, "cost": INF}
+
 func _ready() -> void:
 	config = BalanceConfig.default()
 	_load_or_new()
@@ -107,11 +137,11 @@ func upgrade_or_unlock_mine(i: int) -> bool:
 	if c == null or i < 0 or i >= c.mines.size():
 		return false
 	var m: Mine = c.mines[i]
-	var cost := Economy.mine_upgrade_cost(m)
-	if c.cash < cost:
+	var p := planned_mine(i)
+	if p.count <= 0 or c.cash < p.cost:
 		return false
-	c.cash -= cost
-	m.level += 1
+	c.cash -= p.cost
+	m.level += p.count
 	_after_change("upgrade")
 	return true
 
@@ -135,11 +165,11 @@ func upgrade_elevator() -> bool:
 	var c := active()
 	if c == null:
 		return false
-	var cost := Economy.elevator_upgrade_cost(c.elevator)
-	if c.cash < cost:
+	var p := planned_elevator()
+	if p.count <= 0 or c.cash < p.cost:
 		return false
-	c.cash -= cost
-	c.elevator.level += 1
+	c.cash -= p.cost
+	c.elevator.level += p.count
 	_after_change("upgrade")
 	return true
 
@@ -147,11 +177,11 @@ func upgrade_warehouse() -> bool:
 	var c := active()
 	if c == null:
 		return false
-	var cost := Economy.warehouse_upgrade_cost(c.warehouse)
-	if c.cash < cost:
+	var p := planned_warehouse()
+	if p.count <= 0 or c.cash < p.cost:
 		return false
-	c.cash -= cost
-	c.warehouse.level += 1
+	c.cash -= p.cost
+	c.warehouse.level += p.count
 	_after_change("upgrade")
 	return true
 

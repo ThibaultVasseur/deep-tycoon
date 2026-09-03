@@ -21,13 +21,14 @@ func test_continent_ore_names_differ() -> void:
 	var c1 := Content.build_continent(1, cfg)
 	assert_ne(c0.mines[0].ore_name, c1.mines[0].ore_name)
 
-func test_deep_factor_holds_each_continent() -> void:
+func test_floor_scaling_each_continent() -> void:
 	var cfg := BalanceConfig.default()
 	for id in Content.continent_count():
 		var c := Content.build_continent(id, cfg)
+		assert_eq(c.mines.size(), cfg.floors_per_continent, "continent %d a N étages" % id)
 		for i in range(c.mines.size() - 1):
 			var ratio := c.mines[i + 1].unit_price / c.mines[i].unit_price
-			assert_between(ratio, 50.0, 500.0, "continent %d mine %d" % [id, i])
+			assert_almost(ratio, cfg.floor_value_factor, 0.001, "continent %d étage %d" % [id, i])
 
 func test_out_of_range_id_clamped() -> void:
 	var cfg := BalanceConfig.default()

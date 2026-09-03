@@ -32,9 +32,12 @@ extends Resource
 @export var expedition_reward_minutes: float = 20.0         # récompense = 20 min de prod
 @export var expedition_super_cash_reward: int = 1           # bonus super-cash au retour
 
-# --- Contenu (seed du premier continent) ---
-@export var deep_factor: float = 100.0             # saut de valeur entre 2 mines (cible x50..x500)
-@export var cost_growth: float = 1.15              # croissance de coût standard
+# --- Contenu (étages d'un continent) ---
+@export var floors_per_continent: int = 15         # nombre d'étages par mine (ex : charbon = 15)
+@export var floor_value_factor: float = 1.8        # valeur x1.8 par étage plus profond
+@export var floor_cost_factor: float = 2.3         # coût de base x2.3 par étage plus profond
+@export var floor_base_unlock: float = 12.0        # coût de déblocage de l'étage 1
+@export var cost_growth: float = 1.15              # croissance de coût d'un niveau (dans un étage)
 @export var prod_growth: float = 1.10              # croissance de production par niveau
 
 static func default() -> BalanceConfig:

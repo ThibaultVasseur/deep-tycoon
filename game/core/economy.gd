@@ -46,6 +46,29 @@ static func warehouse_sell_rate(w: Warehouse) -> float:
 static func warehouse_upgrade_cost(w: Warehouse) -> float:
 	return w.base_cost * pow(w.cost_growth, w.level)
 
+# --- Achat en lot (x10 / Max) : somme géométrique des coûts ---
+
+## Coût pour acheter `count` niveaux consécutifs à partir de `level`.
+static func bulk_upgrade_cost(base_cost: float, cost_growth: float, level: int, count: int) -> float:
+	if count <= 0:
+		return 0.0
+	if absf(cost_growth - 1.0) < 0.0000001:
+		return base_cost * count
+	var first := base_cost * pow(cost_growth, level)
+	return first * (pow(cost_growth, count) - 1.0) / (cost_growth - 1.0)
+
+## Nombre max de niveaux achetables avec `budget` à partir de `level` (>= 0).
+static func max_levels_affordable(base_cost: float, cost_growth: float, level: int, budget: float) -> int:
+	if budget <= 0.0 or base_cost <= 0.0:
+		return 0
+	if absf(cost_growth - 1.0) < 0.0000001:
+		return int(floor(budget / base_cost))
+	var first := base_cost * pow(cost_growth, level)
+	var ratio := 1.0 + budget * (cost_growth - 1.0) / first
+	if ratio <= 1.0:
+		return 0
+	return int(floor(log(ratio) / log(cost_growth)))
+
 # --- Multiplicateurs globaux (appliqués au CASH, pas aux unités) ---
 
 static func is_boost_active(state: GameState, now: float) -> bool:

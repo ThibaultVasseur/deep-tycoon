@@ -75,11 +75,32 @@ func test_cash_multiplier_stacks() -> void:
 	# now >= boost_end -> boost inactif : 3 * 2 * 2 = 12
 	assert_almost(Economy.cash_multiplier(s, c, 150.0), 12.0)
 
-func test_deep_factor_jump_between_mines() -> void:
-	var cont := Content.build_first_continent(BalanceConfig.default())
+func test_floor_value_factor_between_floors() -> void:
+	var cfg := BalanceConfig.default()
+	var cont := Content.build_first_continent(cfg)
+	assert_eq(cont.mines.size(), cfg.floors_per_continent, "15 étages par défaut")
 	for i in range(cont.mines.size() - 1):
 		var ratio := cont.mines[i + 1].unit_price / cont.mines[i].unit_price
-		assert_between(ratio, 50.0, 500.0, "saut de valeur mine %d->%d" % [i, i + 1])
+		assert_almost(ratio, cfg.floor_value_factor, 0.001, "valeur étage %d->%d" % [i, i + 1])
+
+func test_floor_cost_increases() -> void:
+	var cont := Content.build_first_continent(BalanceConfig.default())
+	for i in range(cont.mines.size() - 1):
+		assert_gt(cont.mines[i + 1].base_cost, cont.mines[i].base_cost, "étage plus profond plus cher")
+
+func test_bulk_upgrade_cost() -> void:
+	assert_almost(Economy.bulk_upgrade_cost(10.0, 1.15, 0, 1), 10.0)
+	# 10*(1 + 1.15 + 1.15^2) = 34.725
+	assert_almost(Economy.bulk_upgrade_cost(10.0, 1.15, 0, 3), 34.725, 0.01)
+	# croissance 1.0 -> coût linéaire
+	assert_almost(Economy.bulk_upgrade_cost(10.0, 1.0, 0, 5), 50.0)
+	assert_almost(Economy.bulk_upgrade_cost(10.0, 1.15, 0, 0), 0.0)
+
+func test_max_levels_affordable() -> void:
+	assert_eq(Economy.max_levels_affordable(10.0, 1.15, 0, 35.0), 3)
+	assert_eq(Economy.max_levels_affordable(10.0, 1.15, 0, 5.0), 0)
+	assert_eq(Economy.max_levels_affordable(10.0, 1.0, 0, 55.0), 5)
+	assert_eq(Economy.max_levels_affordable(10.0, 1.15, 0, -1.0), 0)
 
 func test_prestige_gain_curve() -> void:
 	# threshold=1e6, k=10 : sous le seuil -> 0

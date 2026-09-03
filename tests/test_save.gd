@@ -24,7 +24,7 @@ func test_roundtrip_preserves_state() -> void:
 	assert_eq(loaded.active().mines[0].level, 5)
 	assert_true(loaded.active().mines[0].has_manager)
 	assert_almost(loaded.last_seen, 99999.0)
-	assert_eq(loaded.active().mines.size(), 5)
+	assert_eq(loaded.active().mines.size(), BalanceConfig.default().floors_per_continent)
 	sm.delete_save()
 	sm.free()
 
