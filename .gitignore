@@ -26,3 +26,6 @@ Thumbs.db
 
 # Extraction PDF locale
 _prompt_extract.txt
+
+# Prompt de cadrage (document de travail, non publié)
+prompt_claude_code_idle_miner_clone.pdf

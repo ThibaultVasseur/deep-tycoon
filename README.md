@@ -7,6 +7,14 @@ Boucle centrale : **Mines → Ascenseur → Entrepôt → Cash**, où le cœur d
 les **goulots d'étranglement** entre les trois maillons, puis d'**automatiser** (managers), d'encaisser du
 **revenu hors-ligne**, et de **prestige** pour progresser sur le long terme.
 
+<p align="center"><img src="docs/images/gameplay.png" alt="Écran de jeu de Deep Tycoon" width="320"></p>
+
+**Points techniques**
+- Toute l'économie vit dans `game/core/`, en **logique pure sans dépendance au moteur**, et se teste en headless.
+- **49 tests** exécutés sans interface, avec un code de sortie exploitable en intégration continue.
+- **Sauvegarde chiffrée (AES) et signée (HMAC-SHA256)**, écrite de façon atomique, avec une protection contre la manipulation de l'horloge pour les gains hors-ligne.
+- Équilibrage centralisé dans un seul fichier de configuration, contenu séparé de la logique.
+
 ## Prérequis
 - **Godot 4.7+** (headless inclus). Installé ici via `scoop install godot`.
 
@@ -20,7 +28,7 @@ godot --path .            # ou ouvrir le dossier dans l'éditeur Godot puis F5
 godot --headless --import
 godot --headless --script res://tests/run_tests.gd
 ```
-Code de sortie 0 si tout passe, 1 sinon (utilisable en CI). Actuellement **38 tests verts**.
+Code de sortie 0 si tout passe, 1 sinon (utilisable en CI). Actuellement **49 tests verts**.
 
 ## Architecture
 ```
